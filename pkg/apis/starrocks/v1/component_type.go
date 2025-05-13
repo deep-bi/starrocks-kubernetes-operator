@@ -338,3 +338,7 @@ const (
 	DRPhaseDoing DRPhase = "doing"
 	DRPhaseDone  DRPhase = "done"
 )
+
+func (spec *StarRocksComponentSpec) GetPriorityClassName() string {
+	return spec.PriorityClassName
+}
