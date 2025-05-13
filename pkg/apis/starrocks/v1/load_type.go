@@ -62,6 +62,9 @@ type loadInterface interface {
 
 	// GetImage returns the container image to use
 	GetImage() string
+
+	// GetPriorityClassName returns the name of the PriorityClass assigned to the pods
+	GetPriorityClassName() string
 }
 
 var _ loadInterface = &StarRocksLoadSpec{}
@@ -205,6 +208,12 @@ type StarRocksLoadSpec struct {
 	// Optional: Default to false.
 	// +optional
 	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
+
+	//If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
+	//cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
+	//More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 func (spec *StarRocksLoadSpec) GetImage() string {

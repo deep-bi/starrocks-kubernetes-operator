@@ -1304,6 +1304,8 @@ spec:
                     type: object
                   podManagementPolicy:
                     type: string
+                  priorityClassName:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:
@@ -3728,6 +3730,8 @@ spec:
                     type: object
                   podManagementPolicy:
                     type: string
+                  priorityClassName:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:
@@ -5094,6 +5098,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  priorityClassName:
+                    type: string
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -6532,6 +6538,8 @@ spec:
                       type: string
                     type: object
                   podManagementPolicy:
+                    type: string
+                  priorityClassName:
                     type: string
                   readOnlyRootFilesystem:
                     type: boolean
