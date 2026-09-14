@@ -193,9 +193,9 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
-	if err = k8sutils.PatchPVCVolumeAttributeClass(ctx, cc.k8sClient,
+	if err = k8sutils.PatchPVCVolumeAttributesClass(ctx, cc.k8sClient,
 		object.Namespace, expectSTS.Name, cnSpec.StorageVolumes); err != nil {
-		logger.Error(err, "patch PVC volumeAttributeClassName failed")
+		logger.Error(err, "patch PVC volumeAttributesClassName failed")
 	}
 
 	// build and deploy service

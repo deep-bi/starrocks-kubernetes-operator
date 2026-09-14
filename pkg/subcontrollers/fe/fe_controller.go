@@ -131,9 +131,9 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	if err = k8sutils.PatchPVCVolumeAttributeClass(ctx, fc.Client,
+	if err = k8sutils.PatchPVCVolumeAttributesClass(ctx, fc.Client,
 		src.Namespace, expectSts.Name, feSpec.StorageVolumes); err != nil {
-		logger.Error(err, "patch PVC volumeAttributeClassName failed")
+		logger.Error(err, "patch PVC volumeAttributesClassName failed")
 	}
 
 	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, rutils.ServiceDeepEqual); err != nil {

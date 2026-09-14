@@ -910,8 +910,8 @@ func (in *StorageVolume) DeepCopyInto(out *StorageVolume) {
 		*out = new(corev1.CSIVolumeSource)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.VolumeAttributeClassName != nil {
-		in, out := &in.VolumeAttributeClassName, &out.VolumeAttributeClassName
+	if in.VolumeAttributesClassName != nil {
+		in, out := &in.VolumeAttributesClassName, &out.VolumeAttributesClassName
 		*out = new(string)
 		**out = **in
 	}

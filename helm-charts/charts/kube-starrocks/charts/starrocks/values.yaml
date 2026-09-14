@@ -384,7 +384,7 @@ starrocksFESpec:
     # The name of a VolumeAttributesClass to apply to all FE PVCs.
     # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
     # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
-    volumeAttributeClassName: ""
+    volumeAttributesClassName: ""
   # mount emptyDir volumes if necessary.
   # Note: please use storageSpec field for persistent metadata and log.
   emptyDirs: []
@@ -773,7 +773,7 @@ starrocksCnSpec:
     # The name of a VolumeAttributesClass to apply to all CN PVCs.
     # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
     # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
-    volumeAttributeClassName: ""
+    volumeAttributesClassName: ""
   # mount emptyDir volumes if necessary.
   # Note: please use storageSpec field for persistent storage data and log.
   emptyDirs: []
@@ -1131,7 +1131,7 @@ starrocksBeSpec:
     # The name of a VolumeAttributesClass to apply to all BE PVCs.
     # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
     # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
-    volumeAttributeClassName: ""
+    volumeAttributesClassName: ""
   # mount emptyDir volumes if necessary.
   # Note: please use storageSpec field for persistent storage data and log.
   emptyDirs: []
