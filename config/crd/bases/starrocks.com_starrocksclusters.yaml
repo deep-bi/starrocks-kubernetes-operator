@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
     version: v1.11.8
   name: starrocksclusters.starrocks.com
 spec:
@@ -907,7 +907,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the ConfigMap or its
@@ -970,7 +969,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the Secret or its key
@@ -1008,10 +1006,8 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-
                       This is an alpha field and requires enabling the
                       DynamicResourceAllocation feature gate.
-
 
                       This field is immutable.
                     items:
@@ -1126,7 +1122,6 @@ spec:
                           description: |-
                             Name of the referent.
                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                            TODO: Add other useful fields. apiVersion, kind, uid?
                           type: string
                       type: object
                       x-kubernetes-map-type: atomic
@@ -1204,7 +1199,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -1267,7 +1261,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -1301,7 +1294,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -1320,7 +1312,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -1576,10 +1567,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -1787,10 +1778,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -1914,10 +1905,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -2091,7 +2080,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -2176,10 +2164,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -2932,7 +2920,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -2995,7 +2982,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -3029,7 +3015,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -3048,7 +3033,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -3304,10 +3288,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -3515,10 +3499,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -3642,10 +3626,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -3819,7 +3801,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -3904,10 +3885,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -4150,19 +4131,19 @@ spec:
                     type: integer
                   storageVolumes:
                     description: "StorageVolumes defines the additional storage for
-                      FE meta or BE/CN storage.\n\n\nFor FE component\n\tIf the storage
+                      FE meta or BE/CN storage.\n\nFor FE component\n\tIf the storage
                       volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,\n\tthen
                       it will be recognized as storing the FE meta.\n\tIf the storage
                       volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,\n\tthen
-                      it will be recognized as storing the FE log.\n\n\nFor BE component\n\tIf
+                      it will be recognized as storing the FE log.\n\nFor BE component\n\tIf
                       the storage volume name is be-storage(or be-data) or the volume
                       mount path is /opt/starrocks/be/storage,\n\tthen it will be
                       recognized as storing the BE data.\n\tIf the storage volume
                       name is be-log or the volume mount path is /opt/starrocks/be/log,\n\tthen
-                      it will be recognized as storing the BE log.\n\n\nFor CN component\n\tIf
+                      it will be recognized as storing the BE log.\n\nFor CN component\n\tIf
                       the storage volume name is cn-log or the volume mount path is
                       /opt/starrocks/cn/log,\n\tthen it will be recognized as storing
-                      the cn log.\n\n\nIf operator can't find the above storage volume
+                      the cn log.\n\nIf operator can't find the above storage volume
                       names or the volume mount paths, it will create\ndefault storage
                       volumes by using emptyDir."
                     items:
@@ -4199,7 +4180,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                               type: object
                               x-kubernetes-map-type: atomic
@@ -4450,7 +4430,6 @@ spec:
                             Valid values are integers greater than 0.
                             When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
 
-
                             For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
                             labelSelector spread as 2/2/2:
                             | zone1 | zone2 | zone3 |
@@ -4459,7 +4438,6 @@ spec:
                             In this situation, new pod with the same labelSelector cannot be scheduled,
                             because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
                             it will violate MaxSkew.
-
 
                             This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
                           format: int32
@@ -4471,7 +4449,6 @@ spec:
                             - Honor: only nodes matching nodeAffinity/nodeSelector are included in the calculations.
                             - Ignore: nodeAffinity/nodeSelector are ignored. All nodes are included in the calculations.
 
-
                             If this value is nil, the behavior is equivalent to the Honor policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
                           type: string
@@ -4482,7 +4459,6 @@ spec:
                             - Honor: nodes without taints, along with tainted nodes for which the incoming pod
                             has a toleration, are included.
                             - Ignore: node taints are ignored. All nodes are included.
-
 
                             If this value is nil, the behavior is equivalent to the Ignore policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
@@ -6005,10 +5981,8 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-
                       This is an alpha field and requires enabling the
                       DynamicResourceAllocation feature gate.
-
 
                       This field is immutable.
                     items:
@@ -6064,7 +6038,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the ConfigMap or its
@@ -6127,7 +6100,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the Secret or its key
@@ -6238,7 +6210,6 @@ spec:
                           description: |-
                             Name of the referent.
                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                            TODO: Add other useful fields. apiVersion, kind, uid?
                           type: string
                       type: object
                       x-kubernetes-map-type: atomic
@@ -6316,7 +6287,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -6379,7 +6349,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -6413,7 +6382,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -6432,7 +6400,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -6688,10 +6655,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -6899,10 +6866,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -7026,10 +6993,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -7203,7 +7168,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -7288,10 +7252,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -8044,7 +8008,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -8107,7 +8070,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -8141,7 +8103,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -8160,7 +8121,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -8416,10 +8376,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -8627,10 +8587,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -8754,10 +8714,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -8931,7 +8889,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -9016,10 +8973,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -9262,19 +9219,19 @@ spec:
                     type: integer
                   storageVolumes:
                     description: "StorageVolumes defines the additional storage for
-                      FE meta or BE/CN storage.\n\n\nFor FE component\n\tIf the storage
+                      FE meta or BE/CN storage.\n\nFor FE component\n\tIf the storage
                       volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,\n\tthen
                       it will be recognized as storing the FE meta.\n\tIf the storage
                       volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,\n\tthen
-                      it will be recognized as storing the FE log.\n\n\nFor BE component\n\tIf
+                      it will be recognized as storing the FE log.\n\nFor BE component\n\tIf
                       the storage volume name is be-storage(or be-data) or the volume
                       mount path is /opt/starrocks/be/storage,\n\tthen it will be
                       recognized as storing the BE data.\n\tIf the storage volume
                       name is be-log or the volume mount path is /opt/starrocks/be/log,\n\tthen
-                      it will be recognized as storing the BE log.\n\n\nFor CN component\n\tIf
+                      it will be recognized as storing the BE log.\n\nFor CN component\n\tIf
                       the storage volume name is cn-log or the volume mount path is
                       /opt/starrocks/cn/log,\n\tthen it will be recognized as storing
-                      the cn log.\n\n\nIf operator can't find the above storage volume
+                      the cn log.\n\nIf operator can't find the above storage volume
                       names or the volume mount paths, it will create\ndefault storage
                       volumes by using emptyDir."
                     items:
@@ -9311,7 +9268,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                               type: object
                               x-kubernetes-map-type: atomic
@@ -9562,7 +9518,6 @@ spec:
                             Valid values are integers greater than 0.
                             When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
 
-
                             For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
                             labelSelector spread as 2/2/2:
                             | zone1 | zone2 | zone3 |
@@ -9571,7 +9526,6 @@ spec:
                             In this situation, new pod with the same labelSelector cannot be scheduled,
                             because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
                             it will violate MaxSkew.
-
 
                             This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
                           format: int32
@@ -9583,7 +9537,6 @@ spec:
                             - Honor: only nodes matching nodeAffinity/nodeSelector are included in the calculations.
                             - Ignore: nodeAffinity/nodeSelector are ignored. All nodes are included in the calculations.
 
-
                             If this value is nil, the behavior is equivalent to the Honor policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
                           type: string
@@ -9594,7 +9547,6 @@ spec:
                             - Honor: nodes without taints, along with tainted nodes for which the incoming pod
                             has a toleration, are included.
                             - Ignore: node taints are ignored. All nodes are included.
-
 
                             If this value is nil, the behavior is equivalent to the Ignore policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
@@ -10464,10 +10416,8 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-
                       This is an alpha field and requires enabling the
                       DynamicResourceAllocation feature gate.
-
 
                       This field is immutable.
                     items:
@@ -10522,7 +10472,6 @@ spec:
                           description: |-
                             Name of the referent.
                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                            TODO: Add other useful fields. apiVersion, kind, uid?
                           type: string
                       type: object
                       x-kubernetes-map-type: atomic
@@ -10914,19 +10863,19 @@ spec:
                     type: integer
                   storageVolumes:
                     description: "StorageVolumes defines the additional storage for
-                      FE meta or BE/CN storage.\n\n\nFor FE component\n\tIf the storage
+                      FE meta or BE/CN storage.\n\nFor FE component\n\tIf the storage
                       volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,\n\tthen
                       it will be recognized as storing the FE meta.\n\tIf the storage
                       volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,\n\tthen
-                      it will be recognized as storing the FE log.\n\n\nFor BE component\n\tIf
+                      it will be recognized as storing the FE log.\n\nFor BE component\n\tIf
                       the storage volume name is be-storage(or be-data) or the volume
                       mount path is /opt/starrocks/be/storage,\n\tthen it will be
                       recognized as storing the BE data.\n\tIf the storage volume
                       name is be-log or the volume mount path is /opt/starrocks/be/log,\n\tthen
-                      it will be recognized as storing the BE log.\n\n\nFor CN component\n\tIf
+                      it will be recognized as storing the BE log.\n\nFor CN component\n\tIf
                       the storage volume name is cn-log or the volume mount path is
                       /opt/starrocks/cn/log,\n\tthen it will be recognized as storing
-                      the cn log.\n\n\nIf operator can't find the above storage volume
+                      the cn log.\n\nIf operator can't find the above storage volume
                       names or the volume mount paths, it will create\ndefault storage
                       volumes by using emptyDir."
                     items:
@@ -10963,7 +10912,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                               type: object
                               x-kubernetes-map-type: atomic
@@ -11184,7 +11132,6 @@ spec:
                             Valid values are integers greater than 0.
                             When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
 
-
                             For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
                             labelSelector spread as 2/2/2:
                             | zone1 | zone2 | zone3 |
@@ -11193,7 +11140,6 @@ spec:
                             In this situation, new pod with the same labelSelector cannot be scheduled,
                             because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
                             it will violate MaxSkew.
-
 
                             This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
                           format: int32
@@ -11205,7 +11151,6 @@ spec:
                             - Honor: only nodes matching nodeAffinity/nodeSelector are included in the calculations.
                             - Ignore: nodeAffinity/nodeSelector are ignored. All nodes are included in the calculations.
 
-
                             If this value is nil, the behavior is equivalent to the Honor policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
                           type: string
@@ -11216,7 +11161,6 @@ spec:
                             - Honor: nodes without taints, along with tainted nodes for which the incoming pod
                             has a toleration, are included.
                             - Ignore: node taints are ignored. All nodes are included.
-
 
                             If this value is nil, the behavior is equivalent to the Ignore policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
@@ -12077,10 +12021,8 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-
                       This is an alpha field and requires enabling the
                       DynamicResourceAllocation feature gate.
-
 
                       This field is immutable.
                     items:
@@ -12188,7 +12130,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the ConfigMap or its
@@ -12251,7 +12192,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                                 optional:
                                   description: Specify whether the Secret or its key
@@ -12310,7 +12250,6 @@ spec:
                           description: |-
                             Name of the referent.
                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                            TODO: Add other useful fields. apiVersion, kind, uid?
                           type: string
                       type: object
                       x-kubernetes-map-type: atomic
@@ -12388,7 +12327,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -12451,7 +12389,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -12485,7 +12422,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -12504,7 +12440,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -12760,10 +12695,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -12971,10 +12906,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -13098,10 +13033,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -13275,7 +13208,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -13360,10 +13292,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -14116,7 +14048,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the ConfigMap
@@ -14179,7 +14110,6 @@ spec:
                                         description: |-
                                           Name of the referent.
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                          TODO: Add other useful fields. apiVersion, kind, uid?
                                         type: string
                                       optional:
                                         description: Specify whether the Secret or
@@ -14213,7 +14143,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap must
@@ -14232,7 +14161,6 @@ spec:
                                     description: |-
                                       Name of the referent.
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
                                   optional:
                                     description: Specify whether the Secret must be
@@ -14488,10 +14416,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -14699,10 +14627,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -14826,10 +14754,8 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-
                                 This is an alpha field and requires enabling the
                                 DynamicResourceAllocation feature gate.
-
 
                                 This field is immutable.
                               items:
@@ -15003,7 +14929,6 @@ spec:
                                     type indicates which kind of seccomp profile will be applied.
                                     Valid options are:
 
-
                                     Localhost - a profile defined in a file on the node should be used.
                                     RuntimeDefault - the container runtime default profile should be used.
                                     Unconfined - no profile should be applied.
@@ -15088,10 +15013,10 @@ spec:
                                   format: int32
                                   type: integer
                                 service:
+                                  default: ""
                                   description: |-
                                     Service is the name of the service to place in the gRPC HealthCheckRequest
                                     (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
-
 
                                     If this is not specified, the default behavior is defined by gRPC.
                                   type: string
@@ -15334,19 +15259,19 @@ spec:
                     type: integer
                   storageVolumes:
                     description: "StorageVolumes defines the additional storage for
-                      FE meta or BE/CN storage.\n\n\nFor FE component\n\tIf the storage
+                      FE meta or BE/CN storage.\n\nFor FE component\n\tIf the storage
                       volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,\n\tthen
                       it will be recognized as storing the FE meta.\n\tIf the storage
                       volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,\n\tthen
-                      it will be recognized as storing the FE log.\n\n\nFor BE component\n\tIf
+                      it will be recognized as storing the FE log.\n\nFor BE component\n\tIf
                       the storage volume name is be-storage(or be-data) or the volume
                       mount path is /opt/starrocks/be/storage,\n\tthen it will be
                       recognized as storing the BE data.\n\tIf the storage volume
                       name is be-log or the volume mount path is /opt/starrocks/be/log,\n\tthen
-                      it will be recognized as storing the BE log.\n\n\nFor CN component\n\tIf
+                      it will be recognized as storing the BE log.\n\nFor CN component\n\tIf
                       the storage volume name is cn-log or the volume mount path is
                       /opt/starrocks/cn/log,\n\tthen it will be recognized as storing
-                      the cn log.\n\n\nIf operator can't find the above storage volume
+                      the cn log.\n\nIf operator can't find the above storage volume
                       names or the volume mount paths, it will create\ndefault storage
                       volumes by using emptyDir."
                     items:
@@ -15383,7 +15308,6 @@ spec:
                                   description: |-
                                     Name of the referent.
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                   type: string
                               type: object
                               x-kubernetes-map-type: atomic
@@ -15634,7 +15558,6 @@ spec:
                             Valid values are integers greater than 0.
                             When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
 
-
                             For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
                             labelSelector spread as 2/2/2:
                             | zone1 | zone2 | zone3 |
@@ -15643,7 +15566,6 @@ spec:
                             In this situation, new pod with the same labelSelector cannot be scheduled,
                             because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
                             it will violate MaxSkew.
-
 
                             This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
                           format: int32
@@ -15655,7 +15577,6 @@ spec:
                             - Honor: only nodes matching nodeAffinity/nodeSelector are included in the calculations.
                             - Ignore: nodeAffinity/nodeSelector are ignored. All nodes are included in the calculations.
 
-
                             If this value is nil, the behavior is equivalent to the Honor policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
                           type: string
@@ -15666,7 +15587,6 @@ spec:
                             - Honor: nodes without taints, along with tainted nodes for which the incoming pod
                             has a toleration, are included.
                             - Ignore: node taints are ignored. All nodes are included.
-
 
                             If this value is nil, the behavior is equivalent to the Ignore policy.
                             This is a beta-level feature default enabled by the NodeInclusionPolicyInPodTopologySpread feature flag.
