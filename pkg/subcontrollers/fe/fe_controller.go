@@ -146,6 +146,11 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
+	if err = k8sutils.PatchPVCVolumeAttributesClass(ctx, fc.Client,
+		src.Namespace, expectSts.Name, feSpec.StorageVolumes); err != nil {
+		logger.Error(err, "patch PVC volumeAttributesClassName failed")
+	}
+
 	if err = fc.RunLeaderAwareUpgrade(ctx, src, &expectSts, feConfig, leaderAwareUpgrade); err != nil {
 		logger.Error(err, "leader-aware upgrade failed")
 		return err
