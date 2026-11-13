@@ -39,7 +39,7 @@ starrocksOperator:
   image:
     # image sliced by "repository:tag"
     repository: techdeepbi/starrocks
-    tag: operator-v1.11.8-deepbi.1
+    tag: operator-v1.11.8-deepbi.2
   imagePullPolicy: Always
   replicaCount: 1
   resources:
