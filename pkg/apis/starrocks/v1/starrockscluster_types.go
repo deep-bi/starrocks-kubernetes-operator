@@ -349,6 +349,7 @@ func (spec *StarRocksFeProxySpec) GetPodManagementPolicy() appsv1.PodManagementP
 	return ""
 }
 
+// GetPriorityClassName returns the name of the PriorityClass assigned to the fe proxy pods.
 func (spec *StarRocksFeProxySpec) GetPriorityClassName() string {
 	return spec.StarRocksLoadSpec.GetPriorityClassName()
 }
