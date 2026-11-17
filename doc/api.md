@@ -2087,6 +2087,22 @@ in the same pod, and the first process in each container will not be assigned PI
 Optional: Default to false.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>priorityClassName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PriorityClassName is the name of the PriorityClass assigned to the pods of this component.
+The priority of a pod determines its scheduling order relative to other pods; if a pod cannot be scheduled,
+the scheduler may preempt (evict) lower-priority pods to make room for it.
+The PriorityClass must already exist in the cluster. If not specified, the pod priority is the cluster default.
+More info: <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/">https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/</a></p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe

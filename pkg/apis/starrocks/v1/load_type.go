@@ -209,9 +209,11 @@ type StarRocksLoadSpec struct {
 	// +optional
 	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
 
-	//If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
-	//cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
-	//More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+	// PriorityClassName is the name of the PriorityClass assigned to the pods of this component.
+	// The priority of a pod determines its scheduling order relative to other pods; if a pod cannot be scheduled,
+	// the scheduler may preempt (evict) lower-priority pods to make room for it.
+	// The PriorityClass must already exist in the cluster. If not specified, the pod priority is the cluster default.
+	// More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
 	// +optional
 	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
@@ -415,6 +417,7 @@ func (spec *StarRocksLoadSpec) GetImagePullPolicy() corev1.PullPolicy {
 	return spec.ImagePullPolicy
 }
 
+// GetPriorityClassName returns the name of the PriorityClass assigned to the pods.
 func (spec *StarRocksLoadSpec) GetPriorityClassName() string {
 	return spec.PriorityClassName
 }
