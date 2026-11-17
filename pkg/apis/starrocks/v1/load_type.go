@@ -62,6 +62,9 @@ type loadInterface interface {
 
 	// GetImage returns the container image to use
 	GetImage() string
+
+	// GetPriorityClassName returns the name of the PriorityClass assigned to the pods
+	GetPriorityClassName() string
 }
 
 var _ loadInterface = &StarRocksLoadSpec{}
@@ -205,6 +208,14 @@ type StarRocksLoadSpec struct {
 	// Optional: Default to false.
 	// +optional
 	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
+
+	// PriorityClassName is the name of the PriorityClass assigned to the pods of this component.
+	// The priority of a pod determines its scheduling order relative to other pods; if a pod cannot be scheduled,
+	// the scheduler may preempt (evict) lower-priority pods to make room for it.
+	// The PriorityClass must already exist in the cluster. If not specified, the pod priority is the cluster default.
+	// More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 func (spec *StarRocksLoadSpec) GetImage() string {
@@ -404,4 +415,9 @@ func (spec *StarRocksLoadSpec) GetImagePullPolicy() corev1.PullPolicy {
 		return corev1.PullIfNotPresent
 	}
 	return spec.ImagePullPolicy
+}
+
+// GetPriorityClassName returns the name of the PriorityClass assigned to the pods.
+func (spec *StarRocksLoadSpec) GetPriorityClassName() string {
+	return spec.PriorityClassName
 }

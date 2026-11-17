@@ -1620,6 +1620,8 @@ spec:
                     type: object
                   podManagementPolicy:
                     type: string
+                  priorityClassName:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:

@@ -338,3 +338,8 @@ const (
 	DRPhaseDoing DRPhase = "doing"
 	DRPhaseDone  DRPhase = "done"
 )
+
+// GetPriorityClassName returns the name of the PriorityClass assigned to the pods.
+func (spec *StarRocksComponentSpec) GetPriorityClassName() string {
+	return spec.PriorityClassName
+}

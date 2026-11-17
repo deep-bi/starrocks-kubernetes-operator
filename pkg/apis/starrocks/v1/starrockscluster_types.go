@@ -349,6 +349,11 @@ func (spec *StarRocksFeProxySpec) GetPodManagementPolicy() appsv1.PodManagementP
 	return ""
 }
 
+// GetPriorityClassName returns the name of the PriorityClass assigned to the fe proxy pods.
+func (spec *StarRocksFeProxySpec) GetPriorityClassName() string {
+	return spec.StarRocksLoadSpec.GetPriorityClassName()
+}
+
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
 // 2. StarRocksWarehouseStatus.Phase represents the phase of starrocks warehouse.
