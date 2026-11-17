@@ -31,6 +31,9 @@ spec:
     {{- if .Values.spec.schedulerName }}
     schedulerName: {{ .Values.spec.schedulerName }}
     {{- end }}
+    {{- if .Values.spec.priorityClassName }}
+    priorityClassName: {{ .Values.spec.priorityClassName | quote }}
+    {{- end }}
     {{- if .Values.spec.nodeSelector }}
     nodeSelector:
       {{- toYaml .Values.spec.nodeSelector | nindent 6 }}

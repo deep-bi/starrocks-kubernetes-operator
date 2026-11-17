@@ -35,7 +35,7 @@ spec:
     replicas: {{ .Values.starrocksFESpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
     {{- if .Values.starrocksFESpec.priorityClassName }}
-    priorityClassName: {{ .Values.starrocksFESpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksFESpec.priorityClassName | quote }}
     {{- end }}
     {{- if .Values.starrocksFESpec.maxUnavailablePods }}
     updateStrategy:
@@ -331,7 +331,7 @@ spec:
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
     {{- if .Values.starrocksBeSpec.priorityClassName }}
-    priorityClassName: {{ .Values.starrocksBeSpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksBeSpec.priorityClassName | quote }}
     {{- end }}
     {{- if .Values.starrocksBeSpec.maxUnavailablePods }}
     updateStrategy:
@@ -670,7 +670,7 @@ spec:
     {{- end }}
     imagePullPolicy: {{ .Values.starrocksCnSpec.imagePullPolicy }}
     {{- if .Values.starrocksCnSpec.priorityClassName }}
-    priorityClassName: {{ .Values.starrocksCnSpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksCnSpec.priorityClassName | quote }}
     {{- end }}
     {{- if .Values.starrocksCnSpec.maxUnavailablePods }}
     updateStrategy:
@@ -1004,7 +1004,7 @@ spec:
     replicas: {{ .Values.starrocksFeProxySpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFeProxySpec.imagePullPolicy }}
     {{- if .Values.starrocksFeProxySpec.priorityClassName }}
-    priorityClassName: {{ .Values.starrocksFeProxySpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksFeProxySpec.priorityClassName | quote }}
     {{- end }}
     resolver: "{{ .Values.starrocksFeProxySpec.resolver }}"
     {{- if .Values.starrocksFeProxySpec.resources }}

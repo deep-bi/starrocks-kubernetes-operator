@@ -87,6 +87,10 @@ spec:
     #   - "example.com"
   # schedulerName allows you to specify which scheduler will be used for the pod
   schedulerName: ""
+  # priorityClassName is the name of an existing PriorityClass to assign to the pods of this component.
+  # It determines the scheduling priority of the pods and their eviction order under resource pressure.
+  # see https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass for more details.
+  priorityClassName: ""
   # Additional container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # This means you can bind in environment variables from secrets.
