@@ -659,3 +659,55 @@ func TestGetPreStopCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestSpec_PriorityClassName(t *testing.T) {
+	const priorityClassName = "starrocks-high-priority"
+	loadSpec := func(name string) v1.StarRocksLoadSpec {
+		return v1.StarRocksLoadSpec{PriorityClassName: name}
+	}
+	componentSpec := func(name string) v1.StarRocksComponentSpec {
+		return v1.StarRocksComponentSpec{StarRocksLoadSpec: loadSpec(name)}
+	}
+	// specs returns one spec per component type, all with the given priorityClassName.
+	specs := func(name string) map[string]v1.SpecInterface {
+		return map[string]v1.SpecInterface{
+			"fe": &v1.StarRocksFeSpec{StarRocksComponentSpec: componentSpec(name)},
+			"be": &v1.StarRocksBeSpec{StarRocksComponentSpec: componentSpec(name)},
+			"cn": &v1.StarRocksCnSpec{StarRocksComponentSpec: componentSpec(name)},
+			// the template of a StarRocksWarehouse is converted to a StarRocksCnSpec
+			"warehouse": (&v1.WarehouseComponentSpec{StarRocksComponentSpec: componentSpec(name)}).ToCnSpec(),
+			"fe proxy":  &v1.StarRocksFeProxySpec{StarRocksLoadSpec: loadSpec(name)},
+		}
+	}
+
+	t.Run("priorityClassName is set", func(t *testing.T) {
+		for component, spec := range specs(priorityClassName) {
+			got := Spec(spec, corev1.Container{}, nil)
+			if got.PriorityClassName != priorityClassName {
+				t.Errorf("%s: Spec().PriorityClassName = %q, want %q", component, got.PriorityClassName, priorityClassName)
+			}
+		}
+	})
+
+	t.Run("priorityClassName is not set", func(t *testing.T) {
+		for component, spec := range specs("") {
+			got := Spec(spec, corev1.Container{}, nil)
+			if got.PriorityClassName != "" {
+				t.Errorf("%s: Spec().PriorityClassName = %q, want it to be empty", component, got.PriorityClassName)
+			}
+			// the priority must be left for the admission controller to resolve
+			if got.Priority != nil {
+				t.Errorf("%s: Spec().Priority = %v, want nil", component, *got.Priority)
+			}
+		}
+	})
+
+	t.Run("pod spec is otherwise unchanged", func(t *testing.T) {
+		with := Spec(&v1.StarRocksFeSpec{StarRocksComponentSpec: componentSpec(priorityClassName)}, corev1.Container{}, nil)
+		without := Spec(&v1.StarRocksFeSpec{}, corev1.Container{}, nil)
+		with.PriorityClassName = ""
+		if !reflect.DeepEqual(with, without) {
+			t.Errorf("Spec() with priorityClassName = %#v, want it to only differ in PriorityClassName from %#v", with, without)
+		}
+	})
+}
