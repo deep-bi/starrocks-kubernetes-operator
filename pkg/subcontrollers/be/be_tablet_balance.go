@@ -40,17 +40,14 @@ func (be *BeController) manageOnDeleteRollout(
 		return fmt.Errorf("get BE statefulset: %w", err)
 	}
 
-	// No update pending.
-	if actual.Status.UpdateRevision == actual.Status.CurrentRevision {
-		return nil
-	}
-
 	replicas := int32(1)
 	if actual.Spec.Replicas != nil {
 		replicas = *actual.Spec.Replicas
 	}
 
-	// All pods already at target revision.
+	// No update pending: all pods already at target revision.
+	// CurrentRevision is not compared with UpdateRevision here. A StatefulSet recreated to expand its volumes
+	// starts with both equal while its adopted pods can still run an older revision.
 	if actual.Status.UpdatedReplicas >= replicas {
 		return nil
 	}

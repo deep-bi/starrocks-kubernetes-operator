@@ -39,7 +39,7 @@ func Status(sts *appsv1.StatefulSet) (string, bool, error) {
 	if sts.Spec.UpdateStrategy.Type == appsv1.OnDeleteStatefulSetStrategyType {
 		// The StatefulSet controller never advances CurrentRevision under OnDelete, so count pods on
 		// the update revision instead. The operator's leader-aware upgrade deletes pods to get them there.
-		if sts.Spec.Replicas != nil && sts.Status.UpdatedReplicas < *sts.Spec.Replicas {
+		if podsOutdated(sts) {
 			return fmt.Sprintf("Waiting for OnDelete roll out to finish: %d out of %d pods have been updated",
 				sts.Status.UpdatedReplicas, *sts.Spec.Replicas), false, nil
 		}
@@ -55,10 +55,17 @@ func Status(sts *appsv1.StatefulSet) (string, bool, error) {
 		}
 		return fmt.Sprintf("partitioned roll out complete: %d new pods have been updated", sts.Status.UpdatedReplicas), true, nil
 	}
-	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
+	// UpdatedReplicas is checked as well as the revisions: a StatefulSet recreated to expand its volumes starts
+	// with CurrentRevision equal to UpdateRevision while its adopted pods can still run an older revision.
+	if sts.Status.UpdateRevision != sts.Status.CurrentRevision || podsOutdated(sts) {
 		return fmt.Sprintf("waiting for statefulset rolling update to complete %d pods at revision %s",
 			sts.Status.UpdatedReplicas, sts.Status.UpdateRevision), false, nil
 	}
 	return fmt.Sprintf("statefulset rolling update complete %d pods at revision %s",
 		sts.Status.CurrentReplicas, sts.Status.CurrentRevision), true, nil
+}
+
+// podsOutdated reports whether some replicas do not run the update revision yet.
+func podsOutdated(sts *appsv1.StatefulSet) bool {
+	return sts.Spec.Replicas != nil && sts.Status.UpdatedReplicas < *sts.Spec.Replicas
 }

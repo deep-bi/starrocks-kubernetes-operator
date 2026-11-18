@@ -313,6 +313,13 @@ func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, cluster
 		return false
 	}
 
+	// A StatefulSet that is being deleted is about to be recreated, which happens when its volumes are expanded.
+	// Its status still describes the pods it is letting go of, and says nothing about the one that replaces it.
+	if sts.DeletionTimestamp != nil {
+		logger.Info("FE StatefulSet is being deleted")
+		return false
+	}
+
 	// Check if revision is fully rolled out. Under the OnDelete strategy the StatefulSet controller never
 	// advances CurrentRevision, so the per-pod count is the only signal there.
 	if sts.Spec.UpdateStrategy.Type == appsv1.OnDeleteStatefulSetStrategyType {
@@ -325,7 +332,10 @@ func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, cluster
 		}
 		return true
 	}
-	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
+	// UpdatedReplicas is checked as well as the revisions: a StatefulSet recreated to expand its volumes starts
+	// with CurrentRevision equal to UpdateRevision while its adopted pods can still run an older revision.
+	if sts.Status.UpdateRevision != sts.Status.CurrentRevision ||
+		(sts.Spec.Replicas != nil && sts.Status.UpdatedReplicas < *sts.Spec.Replicas) {
 		logger.Info("FE StatefulSet rolling update in progress",
 			"currentRevision", sts.Status.CurrentRevision,
 			"updateRevision", sts.Status.UpdateRevision,
