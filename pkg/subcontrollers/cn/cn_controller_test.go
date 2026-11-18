@@ -1032,6 +1032,50 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			}(),
 			wantErr: assert.NoError,
 		},
+		{
+			name: "only stale pods of this statefulset are dropped",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(
+					func() *runtime.Scheme {
+						schema := runtime.NewScheme()
+						_ = clientgoscheme.AddToScheme(schema)
+						return schema
+					}(),
+					cnSTSWithFEEnv("kube-starrocks-cn"),
+				),
+			},
+			args: func() args {
+				db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+				require.NoError(t, err)
+				rows := sqlmock.NewRows([]string{"ComputeNodeId", "IP", "HeartbeatPort"})
+				for _, host := range []string{
+					// kube-starrocks-cn-1 is running but not registered yet, so only three rows belong to live pods
+					cnSearchFQDN(0),
+					cnSearchFQDN(2),
+					cnSearchFQDN(4),
+					// compute nodes the StatefulSet does not own
+					"other-cn-7.other-cn-search.default.svc.cluster.local",
+					"manual-cn.example.com",
+					"10.0.0.9",
+				} {
+					rows.AddRow([]byte("1"), []byte(host), []byte("9050"))
+				}
+				mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(rows)
+				mock.ExpectExec(fmt.Sprintf(`ALTER SYSTEM DROP COMPUTE NODE "%s:9050"`, cnSearchFQDN(4))).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+				expectSTS, actualSTS := cnSTSPair("kube-starrocks-cn", 3, "v2")
+				return args{
+					ctx:          context.Background(),
+					object:       kubeStarrocksClusterObject(),
+					expectSTS:    expectSTS,
+					actualSTS:    actualSTS,
+					actualCNPods: cnPods("kube-starrocks-cn", 3, "v2"),
+					db:           db,
+					sqlMock:      mock,
+				}
+			}(),
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -151,7 +152,7 @@ type ComputeNode struct {
 	HeartbeatPort string
 	WarehouseName string
 
-	index int // the index is from FQDN, used for sorting
+	index int // the ordinal parsed from the FQDN, used for sorting; -1 when the host has none
 }
 
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
@@ -197,10 +198,11 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 				firstPart := strings.Split(computeNode.FQDN, ".")[0]
 				parts := strings.Split(firstPart, "-")
 				indexStr := parts[len(parts)-1]
-				var index int
-				_, err = fmt.Sscanf(indexStr, "%d", &index)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse index from FQDN %s: %v", computeNode.FQDN, err)
+				// A host without an ordinal is not a pod of a StatefulSet, e.g. a compute node added by hand. It
+				// must not fail the query: one such row would stop every stale node from being dropped.
+				index, convErr := strconv.Atoi(indexStr)
+				if convErr != nil {
+					index = -1
 				}
 				computeNode.index = index
 			case "HeartbeatPort":
