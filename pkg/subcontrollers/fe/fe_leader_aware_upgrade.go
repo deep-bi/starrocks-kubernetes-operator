@@ -127,6 +127,9 @@ func newMySQLFrontendsQuerier(ctx context.Context, k8sClient client.Client, src 
 }
 
 func (q *mysqlFrontendsQuerier) ShowFrontends(ctx context.Context) ([]Frontend, error) {
+	ctx, cancel := mysqlutil.WithRequestTimeout(ctx)
+	defer cancel()
+
 	db, err := sql.Open("mysql", q.dsn)
 	if err != nil {
 		return nil, err

@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/mysqlutil"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
@@ -193,6 +194,8 @@ func (be *BeController) checkTabletBalance(
 	}
 	defer db.Close()
 
+	ctx, cancel := mysqlutil.WithRequestTimeout(ctx)
+	defer cancel()
 	rows, err := db.QueryContext(ctx, "SHOW PROC '/cluster_balance'")
 	if err != nil {
 		return false, fmt.Errorf("query cluster_balance: %w", err)
