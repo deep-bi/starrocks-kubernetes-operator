@@ -39,7 +39,7 @@ starrocksOperator:
   image:
     # image sliced by "repository:tag"
     repository: techdeepbi/starrocks
-    tag: operator-v1.11.8-deepbi.3
+    tag: operator-v1.11.8-deepbi.4
   imagePullPolicy: Always
   replicaCount: 1
   resources:
@@ -124,9 +124,10 @@ starrocksOperator:
   # Expand persistent volumes when storageSize of a volume is increased. When true, the operator
   # raises the request of every PersistentVolumeClaim of the volume, then deletes the StatefulSet
   # with orphan propagation and recreates it with the new size; the pods keep running. The
-  # StorageClass must set allowVolumeExpansion: true. When false, increasing storageSize of an
-  # existing volume has no effect. Before turning this on, make sure no StarRocksCluster already
-  # asks for more storage than its volumes have, because those volumes are expanded right away.
+  # StorageClass must set allowVolumeExpansion: true. When false, the volumes are left alone:
+  # Kubernetes rejects the changed StatefulSet and the component reports a sync failure until
+  # storageSize is set back. Before turning this on, make sure no StarRocksCluster already asks
+  # for more storage than its volumes have, because those volumes are expanded right away.
   # A volume can not be shrunk afterwards. Changing this value restarts the operator pod.
   enableVolumeExpansion: false
   # Additional operator container environment variables
