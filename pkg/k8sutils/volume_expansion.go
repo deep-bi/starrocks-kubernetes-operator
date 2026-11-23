@@ -29,10 +29,16 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 )
 
 // expandVolumeClaims grows the claims of a grown storageSize, then orphan-deletes the StatefulSet to recreate it.
+// It does nothing unless the operator was started with --enable-volume-expansion.
 func expandVolumeClaims(ctx context.Context, k8sClient client.Client, expect, actual *appsv1.StatefulSet) (bool, error) {
+	if !config.EnableVolumeExpansion {
+		return false, nil
+	}
 	grown, err := grownClaimTemplates(expect.Spec.VolumeClaimTemplates, actual.Spec.VolumeClaimTemplates)
 	if err != nil || len(grown) == 0 {
 		return false, err

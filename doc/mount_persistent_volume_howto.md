@@ -152,7 +152,20 @@ We have also provided some special `storageClassName` for you to use:
 
 ## 4. Expand a Persistent Volume
 
-Increase `storageSize` of a volume in the StarRocksCluster to expand it. The StorageClass of the volume must set
+Volume expansion is off by default. Turn it on by starting the operator with `--enable-volume-expansion=true`. With
+the Helm chart:
+
+```yaml
+starrocksOperator:
+  enableVolumeExpansion: true
+```
+
+With the plain manifest, set `--enable-volume-expansion=true` in the operator container args of `deploy/operator.yaml`.
+
+> Note: Before turning it on, make sure no StarRocksCluster already asks for a larger `storageSize` than its volumes
+> have. Those volumes are expanded as soon as the operator starts with the flag.
+
+Then increase `storageSize` of a volume in the StarRocksCluster to expand it. The StorageClass of the volume must set
 `allowVolumeExpansion: true`, and its CSI driver must support online expansion (for example, the AWS EBS CSI driver).
 
 The operator raises the request of every PersistentVolumeClaim of the volume, and the CSI driver expands the disks

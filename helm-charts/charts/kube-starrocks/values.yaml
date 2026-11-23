@@ -128,6 +128,14 @@ operator:
     # the FE pods, if set, and refuses to delete anything when SHOW FRONTENDS fails or reports an FE
     # as not alive. Changing this value restarts the operator pod.
     enableFeLeaderAwareUpgrade: false
+    # Expand persistent volumes when storageSize of a volume is increased. When true, the operator
+    # raises the request of every PersistentVolumeClaim of the volume, then deletes the StatefulSet
+    # with orphan propagation and recreates it with the new size; the pods keep running. The
+    # StorageClass must set allowVolumeExpansion: true. When false, increasing storageSize of an
+    # existing volume has no effect. Before turning this on, make sure no StarRocksCluster already
+    # asks for more storage than its volumes have, because those volumes are expanded right away.
+    # A volume can not be shrunk afterwards. Changing this value restarts the operator pod.
+    enableVolumeExpansion: false
     # Additional operator container environment variables
     # You specify this manually like you would a raw deployment manifest.
     # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/

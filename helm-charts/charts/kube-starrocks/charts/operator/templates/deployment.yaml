@@ -73,6 +73,9 @@ spec:
         {{- if .Values.starrocksOperator.enableFeLeaderAwareUpgrade }}
         - --enable-fe-leader-aware-upgrade=true
         {{- end }}
+        {{- if .Values.starrocksOperator.enableVolumeExpansion }}
+        - --enable-volume-expansion=true
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

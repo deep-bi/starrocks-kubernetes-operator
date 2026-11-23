@@ -21,6 +21,12 @@ var (
 	// a time, followers first and the BDBJE leader (as reported by SHOW FRONTENDS) last, so that
 	// a single upgrade triggers exactly one leader election. See fe.ReconcileLeaderAwareUpgrade.
 	EnableFeLeaderAwareUpgrade bool
+
+	// EnableVolumeExpansion makes the operator expand persistent volumes when storageSize of a volume
+	// is increased: it raises the request of the PersistentVolumeClaims, then deletes the StatefulSet
+	// with orphan propagation and recreates it with the new volumeClaimTemplates. When false, an
+	// increased storageSize is not applied to existing volumes. See k8sutils.ApplyStatefulSet.
+	EnableVolumeExpansion bool
 )
 
 func GetServiceDomainSuffix() string {

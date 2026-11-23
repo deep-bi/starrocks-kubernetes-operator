@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -80,7 +81,31 @@ func stsExists(t *testing.T, c client.Client) bool {
 	return err == nil
 }
 
+// enableVolumeExpansion turns the --enable-volume-expansion flag on for one test.
+func enableVolumeExpansion(t *testing.T) {
+	config.EnableVolumeExpansion = true
+	t.Cleanup(func() { config.EnableVolumeExpansion = false })
+}
+
+func TestApplyStatefulSetLeavesVolumeClaimsWhenExpansionIsDisabled(t *testing.T) {
+	c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(
+		sts("kube-cn-search", claimTemplate("cn-data", "10Gi")), claim("cn-data-kube-cn-0", "10Gi"),
+	).Build()
+
+	expect := sts("kube-cn-search", claimTemplate("cn-data", "20Gi"))
+	if err := k8sutils.ApplyStatefulSet(context.Background(), c, expect, true, rutils.StatefulSetDeepEqual); err != nil {
+		t.Fatal(err)
+	}
+	if got := storageOf(t, c, "cn-data-kube-cn-0"); got != "10Gi" {
+		t.Errorf("claim was expanded to %s with volume expansion disabled", got)
+	}
+	if !stsExists(t, c) {
+		t.Fatal("statefulset was deleted with volume expansion disabled")
+	}
+}
+
 func TestApplyStatefulSetExpandsVolumeClaims(t *testing.T) {
+	enableVolumeExpansion(t)
 	ctx := context.Background()
 	c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(
 		sts("kube-cn-search", claimTemplate("cn-data", "10Gi"), claimTemplate("cn-log", "1Gi")),
@@ -118,6 +143,7 @@ func TestApplyStatefulSetExpandsVolumeClaims(t *testing.T) {
 }
 
 func TestApplyStatefulSetRefusesVolumeExpansion(t *testing.T) {
+	enableVolumeExpansion(t)
 	tests := []struct {
 		name   string
 		expect *appsv1.StatefulSet
@@ -144,6 +170,7 @@ func TestApplyStatefulSetRefusesVolumeExpansion(t *testing.T) {
 }
 
 func TestApplyStatefulSetLeavesOtherTemplateChanges(t *testing.T) {
+	enableVolumeExpansion(t)
 	for name, expect := range map[string]*appsv1.StatefulSet{
 		"unchanged":     sts("kube-cn-search", claimTemplate("cn-data", "10Gi")),
 		"volume added":  sts("kube-cn-search", claimTemplate("cn-data", "20Gi"), claimTemplate("cn-spill", "10Gi")),
