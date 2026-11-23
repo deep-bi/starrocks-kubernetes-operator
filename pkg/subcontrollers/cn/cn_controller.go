@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -233,11 +234,6 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	if err != nil {
 		logger.Error(err, "sync autoscaler failed")
 		return err
-	}
-
-	// only take effect for shared-data mode
-	if !fe.IsRunInSharedDataMode(feconfig) {
-		return nil
 	}
 
 	// get actual statefulset object
@@ -648,23 +644,47 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		logger.Error(err, "query SHOW COMPUTE NODES failed", "sql", "SHOW COMPUTE NODES")
 		return err
 	}
+	computeNodes := computeNodesForDrop(object, result, expectReplicas)
+	for i := len(computeNodes) - 1; i >= 0; i-- {
+		err = executor.ExecuteDropComputeNode(ctx, db, computeNodes[i])
+		if err != nil {
+			logger.Error(err, "drop compute node failed", "computeNode", computeNodes[i])
+			return err
+		}
+		logger.Info("drop compute node success", "computeNode", computeNodes[i])
+	}
+
+	return nil
+}
+
+// computeNodesForDrop returns the compute nodes that FE still has registered for pods the StatefulSet no longer
+// runs, ordered by ordinal.
+// Only nodes whose host is a pod of this StatefulSet with an ordinal of expectReplicas or above are returned. A
+// compute node registered by anything else (another StatefulSet, a node added by hand, a node registered by IP)
+// is never touched, whatever its position in SHOW COMPUTE NODES.
+func computeNodesForDrop(object object.StarRocksObject, result *ShowComputeNodesResult, expectReplicas int32) []ComputeNode {
 	warehouseNameInFE := "default_warehouse"
 	if object.IsWarehouseObject {
 		warehouseNameInFE = object.GetWarehouseNameInFE()
 	}
 	computeNodes := result.ComputeNodesByWarehouse[warehouseNameInFE]
-	if len(computeNodes) > int(expectReplicas) {
-		for i := len(computeNodes) - 1; i >= int(expectReplicas); i-- {
-			err = executor.ExecuteDropComputeNode(ctx, db, computeNodes[i])
-			if err != nil {
-				logger.Error(err, "drop compute node failed", "computeNode", computeNodes[i])
-				return err
-			}
-			logger.Info("drop compute node success", "computeNode", computeNodes[i])
-		}
+	// shared_nothing SHOW COMPUTE NODES has no WarehouseName, so rows are keyed "".
+	if !object.IsWarehouseObject && len(computeNodes) == 0 {
+		computeNodes = result.ComputeNodesByWarehouse[""]
 	}
 
-	return nil
+	stsName := object.GetCNStatefulSetName()
+	var stale []ComputeNode
+	for _, computeNode := range computeNodes {
+		podName := strings.Split(computeNode.FQDN, ".")[0]
+		if podName != fmt.Sprintf("%s-%d", stsName, computeNode.index) {
+			continue
+		}
+		if computeNode.index >= int(expectReplicas) {
+			stale = append(stale, computeNode)
+		}
+	}
+	return stale
 }
 
 func generateInternalService(object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
