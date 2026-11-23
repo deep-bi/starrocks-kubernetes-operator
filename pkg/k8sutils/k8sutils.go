@@ -175,7 +175,8 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 			return f != metav1.FinalizerOrphanDependents
 		})
 		if len(finalizers) == len(actual.Finalizers) {
-			return nil
+			// only the orphan finalizer is left: a volume expansion that deleted the statefulset is finished here
+			return resumeVolumeExpansion(ctx, k8sClient, expect, &actual)
 		}
 		actual.Finalizers = finalizers
 		return k8sClient.Update(ctx, &actual)

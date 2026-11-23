@@ -19,6 +19,7 @@ package k8sutils_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -73,6 +74,18 @@ func storageOf(t *testing.T, c client.Client, name string) string {
 	return pvc.Spec.Resources.Requests.Storage().String()
 }
 
+func getSts(t *testing.T, c client.Client) *appsv1.StatefulSet {
+	var got appsv1.StatefulSet
+	if err := c.Get(context.Background(), types.NamespacedName{Namespace: "default", Name: "kube-cn"}, &got); err != nil {
+		t.Fatal(err)
+	}
+	return &got
+}
+
+func claimTemplateSize(sts *appsv1.StatefulSet) string {
+	return sts.Spec.VolumeClaimTemplates[0].Spec.Resources.Requests.Storage().String()
+}
+
 func stsExists(t *testing.T, c client.Client) bool {
 	err := c.Get(context.Background(), types.NamespacedName{Namespace: "default", Name: "kube-cn"}, &appsv1.StatefulSet{})
 	if err != nil && !apierrors.IsNotFound(err) {
@@ -107,9 +120,11 @@ func TestApplyStatefulSetLeavesVolumeClaimsWhenExpansionIsDisabled(t *testing.T)
 func TestApplyStatefulSetExpandsVolumeClaims(t *testing.T) {
 	enableVolumeExpansion(t)
 	ctx := context.Background()
+	unlabelled := claim("cn-data-kube-cn-2", "10Gi")
+	unlabelled.Labels = nil // created by hand, before the StatefulSet
 	c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(
 		sts("kube-cn-search", claimTemplate("cn-data", "10Gi"), claimTemplate("cn-log", "1Gi")),
-		claim("cn-data-kube-cn-0", "10Gi"), claim("cn-data-kube-cn-1", "10Gi"), claim("cn-log-kube-cn-0", "1Gi"),
+		claim("cn-data-kube-cn-0", "10Gi"), claim("cn-data-kube-cn-1", "10Gi"), unlabelled, claim("cn-log-kube-cn-0", "1Gi"),
 		claim("cn-data-kube-cn-other-0", "10Gi"), // another StatefulSet's claim with the same labels
 	).Build()
 
@@ -118,28 +133,143 @@ func TestApplyStatefulSetExpandsVolumeClaims(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, want := range map[string]string{
-		"cn-data-kube-cn-0": "20Gi", "cn-data-kube-cn-1": "20Gi", "cn-log-kube-cn-0": "1Gi", "cn-data-kube-cn-other-0": "10Gi",
+		"cn-data-kube-cn-0": "20Gi", "cn-data-kube-cn-1": "20Gi", "cn-data-kube-cn-2": "20Gi",
+		"cn-log-kube-cn-0": "1Gi", "cn-data-kube-cn-other-0": "10Gi",
 	} {
 		if got := storageOf(t, c, name); got != want {
 			t.Errorf("%s: got %s, want %s", name, got, want)
 		}
 	}
-	if stsExists(t, c) {
-		t.Fatal("statefulset should be deleted so it can be recreated with the new templates")
+	// the statefulset is created again with the new size in the same reconcile
+	if got := getSts(t, c); claimTemplateSize(got) != "20Gi" || got.DeletionTimestamp != nil {
+		t.Fatalf("statefulset has %s and deletionTimestamp %v, want 20Gi and none", claimTemplateSize(got), got.DeletionTimestamp)
 	}
 
-	// the next reconcile recreates it with the new size
+	// the next reconcile has nothing left to expand
 	expect = sts("kube-cn-search", claimTemplate("cn-data", "20Gi"), claimTemplate("cn-log", "1Gi"))
 	if err := k8sutils.ApplyStatefulSet(ctx, c, expect, true, rutils.StatefulSetDeepEqual); err != nil {
 		t.Fatal(err)
 	}
-	var got appsv1.StatefulSet
-	if err := c.Get(ctx, types.NamespacedName{Namespace: "default", Name: "kube-cn"}, &got); err != nil {
+	if got := getSts(t, c); claimTemplateSize(got) != "20Gi" {
+		t.Fatalf("statefulset has %s, want 20Gi", claimTemplateSize(got))
+	}
+}
+
+// The StatefulSet is created again from its live state. What the expected StatefulSet does not say, such as a replica
+// count it leaves empty or a pod template annotation added by kubectl, must survive, or pods are stopped or restarted.
+func TestApplyStatefulSetExpansionKeepsLiveState(t *testing.T) {
+	enableVolumeExpansion(t)
+	ctx := context.Background()
+	const restartedAt = "kubectl.kubernetes.io/restartedAt"
+
+	live := sts("kube-cn-search", claimTemplate("cn-data", "10Gi"))
+	replicas := int32(3)
+	live.Spec.Replicas = &replicas
+	live.Spec.Template.Annotations = map[string]string{restartedAt: "2026-11-23T10:00:00Z"}
+	live.Spec.Template.Spec.Containers = []corev1.Container{{Name: "cn", Image: "cn:1"}}
+	c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(live, claim("cn-data-kube-cn-0", "10Gi")).Build()
+
+	// the expected statefulset leaves replicas empty, and changes the image along with the size
+	expect := func() *appsv1.StatefulSet {
+		e := sts("kube-cn-search", claimTemplate("cn-data", "20Gi"))
+		e.Spec.Template.Spec.Containers = []corev1.Container{{Name: "cn", Image: "cn:2"}}
+		return e
+	}
+
+	if err := k8sutils.ApplyStatefulSet(ctx, c, expect(), true, rutils.StatefulSetDeepEqual); err != nil {
 		t.Fatal(err)
 	}
-	if size := got.Spec.VolumeClaimTemplates[0].Spec.Resources.Requests.Storage().String(); size != "20Gi" {
-		t.Fatalf("recreated statefulset has %s, want 20Gi", size)
+	got := getSts(t, c)
+	if claimTemplateSize(got) != "20Gi" {
+		t.Errorf("volumeClaimTemplate has %s, want 20Gi", claimTemplateSize(got))
 	}
+	if got.Spec.Replicas == nil || *got.Spec.Replicas != 3 {
+		t.Errorf("replicas = %v, want the 3 of the live statefulset", got.Spec.Replicas)
+	}
+	if got.Spec.Template.Annotations[restartedAt] == "" {
+		t.Errorf("pod template annotations = %v, want %s kept", got.Spec.Template.Annotations, restartedAt)
+	}
+	if image := got.Spec.Template.Spec.Containers[0].Image; image != "cn:1" {
+		t.Errorf("image = %s, want the pod template left as it was", image)
+	}
+
+	// the image change is applied by the next reconcile, as an ordinary update
+	if err := k8sutils.ApplyStatefulSet(ctx, c, expect(), true, rutils.StatefulSetDeepEqual); err != nil {
+		t.Fatal(err)
+	}
+	got = getSts(t, c)
+	if image := got.Spec.Template.Spec.Containers[0].Image; image != "cn:2" {
+		t.Errorf("image = %s, want cn:2", image)
+	}
+	if got.Spec.Replicas == nil || *got.Spec.Replicas != 3 || got.Spec.Template.Annotations[restartedAt] == "" {
+		t.Errorf("replicas = %v, pod template annotations = %v, want both kept", got.Spec.Replicas, got.Spec.Template.Annotations)
+	}
+}
+
+// A StatefulSet that is still being deleted when the reconcile gives up waiting, or when the operator restarts, is
+// picked up again by a later reconcile.
+func TestApplyStatefulSetResumesVolumeExpansion(t *testing.T) {
+	enableVolumeExpansion(t)
+	ctx := context.Background()
+	deleting := func(size string) *appsv1.StatefulSet {
+		s := sts("kube-cn-search", claimTemplate("cn-data", size))
+		replicas := int32(3)
+		s.Spec.Replicas = &replicas
+		now := metav1.Now()
+		s.DeletionTimestamp = &now
+		s.Finalizers = []string{metav1.FinalizerOrphanDependents}
+		return s
+	}
+	expect := func() *appsv1.StatefulSet { return sts("kube-cn-search", claimTemplate("cn-data", "20Gi")) }
+
+	t.Run("pods not released yet", func(t *testing.T) {
+		defer k8sutils.SetRecreateTimeout(50 * time.Millisecond)()
+		c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(deleting("10Gi")).Build()
+		if err := k8sutils.ApplyStatefulSet(ctx, c, expect(), true, rutils.StatefulSetDeepEqual); err == nil {
+			t.Fatal("expected an error, so that the reconcile is retried")
+		}
+		if got := getSts(t, c); got.DeletionTimestamp == nil || claimTemplateSize(got) != "10Gi" {
+			t.Fatalf("statefulset was touched: deletionTimestamp %v, size %s", got.DeletionTimestamp, claimTemplateSize(got))
+		}
+	})
+
+	t.Run("pods released", func(t *testing.T) {
+		c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(deleting("10Gi")).Build()
+		released := make(chan error, 1)
+		go func() { // the garbage collector releases the pods, then removes its finalizer
+			time.Sleep(300 * time.Millisecond)
+			var s appsv1.StatefulSet
+			if err := c.Get(ctx, types.NamespacedName{Namespace: "default", Name: "kube-cn"}, &s); err != nil {
+				released <- err
+				return
+			}
+			s.Finalizers = nil
+			released <- c.Update(ctx, &s)
+		}()
+		if err := k8sutils.ApplyStatefulSet(ctx, c, expect(), true, rutils.StatefulSetDeepEqual); err != nil {
+			t.Fatal(err)
+		}
+		if err := <-released; err != nil {
+			t.Fatal(err)
+		}
+		got := getSts(t, c)
+		if got.DeletionTimestamp != nil || claimTemplateSize(got) != "20Gi" {
+			t.Errorf("deletionTimestamp %v, size %s, want a new statefulset with 20Gi", got.DeletionTimestamp, claimTemplateSize(got))
+		}
+		if got.Spec.Replicas == nil || *got.Spec.Replicas != 3 {
+			t.Errorf("replicas = %v, want the 3 of the deleted statefulset", got.Spec.Replicas)
+		}
+	})
+
+	t.Run("deleted for another reason", func(t *testing.T) {
+		c := fake.NewClientBuilder().WithScheme(srapi.Scheme).WithObjects(deleting("20Gi")).Build()
+		if err := k8sutils.ApplyStatefulSet(ctx, c, expect(), true, rutils.StatefulSetDeepEqual); err != nil {
+			t.Fatal(err)
+		}
+		if got := getSts(t, c); got.DeletionTimestamp == nil {
+			t.Fatal("statefulset must be left to be deleted")
+		}
+	})
 }
 
 func TestApplyStatefulSetRefusesVolumeExpansion(t *testing.T) {
