@@ -152,7 +152,9 @@ We have also provided some special `storageClassName` for you to use:
 
 ## 4. Expand a Persistent Volume
 
-Volume expansion is off by default. Turn it on by starting the operator with `--enable-volume-expansion=true`. With
+Volume expansion is off by default. While it is off, increasing `storageSize` of an existing volume leaves the volume
+alone: Kubernetes rejects the changed StatefulSet and the component reports a sync failure until `storageSize` is set
+back. Turn it on by starting the operator with `--enable-volume-expansion=true`. With
 the Helm chart:
 
 ```yaml
