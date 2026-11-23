@@ -149,3 +149,29 @@ We have also provided some special `storageClassName` for you to use:
     ```
 
 > Note: In both cases, the `storageSize` field will be ignored.
+
+## 4. Expand a Persistent Volume
+
+Volume expansion is off by default. Turn it on by starting the operator with `--enable-volume-expansion=true`. With
+the Helm chart:
+
+```yaml
+starrocksOperator:
+  enableVolumeExpansion: true
+```
+
+With the plain manifest, set `--enable-volume-expansion=true` in the operator container args of `deploy/operator.yaml`.
+
+> Note: Before turning it on, make sure no StarRocksCluster already asks for a larger `storageSize` than its volumes
+> have. Those volumes are expanded as soon as the operator starts with the flag.
+
+Then increase `storageSize` of a volume in the StarRocksCluster to expand it. The StorageClass of the volume must set
+`allowVolumeExpansion: true`, and its CSI driver must support online expansion (for example, the AWS EBS CSI driver).
+
+The operator raises the request of every PersistentVolumeClaim of the volume, and the CSI driver expands the disks
+while the pods keep running. Because `volumeClaimTemplates` of a StatefulSet can not be changed, the operator then
+deletes the StatefulSet with `--cascade=orphan` and creates it again with the new size. The pods are adopted by the new
+StatefulSet and are not restarted.
+
+> Note: `storageSize` can only be increased. Adding, removing or renaming a volume still requires recreating the
+> StatefulSet yourself.

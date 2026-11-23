@@ -198,6 +198,7 @@ spec:
         - --volume-name-with-hash=true
         - --fe-ssl-mode=PREFERRED
         - --enable-fe-leader-aware-upgrade=false
+        - --enable-volume-expansion=false
         env:
         - name: TZ
           value: Asia/Shanghai

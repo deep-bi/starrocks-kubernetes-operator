@@ -56,6 +56,32 @@ func TestStatus_OnDelete(t *testing.T) {
 	require.True(t, done, "all pods on the update revision")
 }
 
+// A StatefulSet recreated to expand its volumes adopts the running pods. Its CurrentRevision starts equal to its
+// UpdateRevision even when those pods still run an older revision.
+func TestStatus_RollingUpdateOfRecreatedStatefulSet(t *testing.T) {
+	replicas := int32(3)
+	sts := func(updated int32) *appsv1.StatefulSet {
+		s := &appsv1.StatefulSet{}
+		s.Generation = 1
+		s.Spec.Replicas = &replicas
+		s.Spec.UpdateStrategy = appsv1.StatefulSetUpdateStrategy{Type: appsv1.RollingUpdateStatefulSetStrategyType}
+		s.Status.ObservedGeneration = 1
+		s.Status.ReadyReplicas = 3
+		s.Status.UpdatedReplicas = updated
+		s.Status.UpdateRevision = "rev-new"
+		s.Status.CurrentRevision = "rev-new"
+		return s
+	}
+
+	_, done, err := Status(sts(1))
+	require.NoError(t, err)
+	require.False(t, done, "adopted pods still on the old revision")
+
+	_, done, err = Status(sts(3))
+	require.NoError(t, err)
+	require.True(t, done, "all pods on the update revision")
+}
+
 func TestStatus_UnknownStrategy(t *testing.T) {
 	s := &appsv1.StatefulSet{}
 	s.Spec.UpdateStrategy.Type = "Bogus"

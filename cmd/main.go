@@ -61,6 +61,11 @@ func main() {
 			"OnDelete update strategy, and the operator deletes one FE pod at a time, followers first and the "+
 			"leader reported by SHOW FRONTENDS last, so a single upgrade causes exactly one leader election. "+
 			"Requires the operator to be able to delete pods.")
+	flag.BoolVar(&config.EnableVolumeExpansion, "enable-volume-expansion", false,
+		"Expand persistent volumes when storageSize of a volume is increased. The operator raises the request "+
+			"of the PersistentVolumeClaims, then deletes the StatefulSet with orphan propagation and recreates it "+
+			"with the new size, without restarting the pods. The StorageClass must allow volume expansion. "+
+			"Requires the operator to be able to patch persistentvolumeclaims.")
 
 	// Set up logger.
 	opts := zap.Options{}

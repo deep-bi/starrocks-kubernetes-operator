@@ -383,6 +383,72 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			want: true,
 		},
 		{
+			// The old StatefulSet is deleted with orphan propagation to expand its volumes and still reports
+			// the pods it is letting go of as ready and up to date.
+			name: "statefulset being deleted - should return false",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "kube-starrocks-fe",
+						Namespace:         "default",
+						Generation:        2,
+						DeletionTimestamp: &metav1.Time{Time: time.Now()},
+						Finalizers:        []string{metav1.FinalizerOrphanDependents},
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 2,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    3,
+						CurrentRevision:    "v1",
+						UpdateRevision:     "v1",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			// A StatefulSet recreated to expand its volumes: CurrentRevision starts equal to UpdateRevision
+			// while the adopted pods still run the old revision.
+			name: "recreated statefulset - revisions match but pods are not updated yet",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "kube-starrocks-fe",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 1,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    0,
+						CurrentRevision:    "v2",
+						UpdateRevision:     "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
 			name: "OnDelete strategy - pods still on the old revision, CurrentRevision never advances",
 			args: args{
 				ctx: context.Background(),
