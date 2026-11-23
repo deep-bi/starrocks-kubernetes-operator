@@ -50,13 +50,13 @@ helm repo update
 Install the operator and a StarRocks cluster together:
 
 ```bash
-helm install starrocks deep-bi/kube-starrocks --version 1.11.8-deepbi.3 -n starrocks --create-namespace
+helm install starrocks deep-bi/kube-starrocks --version 1.11.8-deepbi.4 -n starrocks --create-namespace
 ```
 
 Or install only the operator, and manage StarRocks clusters yourself:
 
 ```bash
-helm install starrocks-operator deep-bi/operator --version 1.11.8-deepbi.3 -n starrocks --create-namespace
+helm install starrocks-operator deep-bi/operator --version 1.11.8-deepbi.4 -n starrocks --create-namespace
 ```
 
 The charts are `kube-starrocks` (operator and cluster), `operator`, `starrocks` (cluster only) and `warehouse`. Always
@@ -65,30 +65,30 @@ pass `--version`: chart versions carry the `-deepbi.N` suffix, which Helm treats
 To upgrade to a specific version:
 
 ```bash
-helm upgrade starrocks-operator deep-bi/operator --version 1.11.8-deepbi.3 -n starrocks
+helm upgrade starrocks-operator deep-bi/operator --version 1.11.8-deepbi.4 -n starrocks
 ```
 
 Helm does not upgrade CRDs. Apply them from the release you are upgrading to:
 
 ```bash
-kubectl apply --server-side -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.3/deploy/starrocks.com_starrocksclusters.yaml
-kubectl apply --server-side -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.3/deploy/starrocks.com_starrockswarehouses.yaml
+kubectl apply --server-side -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.4/deploy/starrocks.com_starrocksclusters.yaml
+kubectl apply --server-side -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.4/deploy/starrocks.com_starrockswarehouses.yaml
 ```
 
 To install without Helm, apply the CRDs above and then the operator manifest:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.3/deploy/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/deep-bi/starrocks-kubernetes-operator/v1.11.8-deepbi.4/deploy/operator.yaml
 ```
 
 ## Versioning and Compatibility
 
-Each release is tagged `v<upstream version>-deepbi.<N>` (e.g. `v1.11.8-deepbi.3`): the upstream release it is built on,
+Each release is tagged `v<upstream version>-deepbi.<N>` (e.g. `v1.11.8-deepbi.4`): the upstream release it is built on,
 followed by the Deep.BI revision. The Helm charts have the same version without the leading `v`.
 
 Docker images are published to Docker Hub as
 [`techdeepbi/starrocks`](https://hub.docker.com/r/techdeepbi/starrocks) with the tag `operator-v<version>`
-(e.g. `techdeepbi/starrocks:operator-v1.11.8-deepbi.3`).
+(e.g. `techdeepbi/starrocks:operator-v1.11.8-deepbi.4`).
 
 Requirements: Kubernetes >= 1.23 and Helm >= 3.0.
 
