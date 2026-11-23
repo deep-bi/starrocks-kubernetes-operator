@@ -172,8 +172,9 @@ Then increase `storageSize` of a volume in the StarRocksCluster to expand it. Th
 
 The operator raises the request of every PersistentVolumeClaim of the volume, and the CSI driver expands the disks
 while the pods keep running. Because `volumeClaimTemplates` of a StatefulSet can not be changed, the operator then
-deletes the StatefulSet with `--cascade=orphan` and creates it again with the new size. The pods are adopted by the new
-StatefulSet and are not restarted.
+deletes the StatefulSet with `--cascade=orphan` and creates it again with the new size. Everything else is copied from
+the StatefulSet as it was, so the pods are adopted by the new StatefulSet and are not restarted. Other changes made to
+the StarRocksCluster at the same time, such as a new image, are applied afterwards as a normal update.
 
 > Note: `storageSize` can only be increased. Adding, removing or renaming a volume still requires recreating the
 > StatefulSet yourself.

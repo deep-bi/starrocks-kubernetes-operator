@@ -12,10 +12,12 @@ import (
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/mysqlutil"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
@@ -37,7 +39,19 @@ func (be *BeController) manageOnDeleteRollout(
 		Namespace: src.Namespace,
 		Name:      stsName,
 	}, &actual); err != nil {
+		if apierrors.IsNotFound(err) {
+			// Right after the StatefulSet is created the cached client may not see it yet; the watch on
+			// StatefulSets triggers another reconcile once it does.
+			return nil
+		}
 		return fmt.Errorf("get BE statefulset: %w", err)
+	}
+
+	// Nothing can be told from a StatefulSet that is being deleted, or whose status does not describe its
+	// latest spec yet. The next status update of the StatefulSet triggers another reconcile.
+	if actual.DeletionTimestamp != nil || actual.Status.ObservedGeneration < actual.Generation ||
+		actual.Status.UpdateRevision == "" {
+		return nil
 	}
 
 	replicas := int32(1)
@@ -46,9 +60,20 @@ func (be *BeController) manageOnDeleteRollout(
 	}
 
 	// No update pending: all pods already at target revision.
-	// CurrentRevision is not compared with UpdateRevision here. A StatefulSet recreated to expand its volumes
-	// starts with both equal while its adopted pods can still run an older revision.
 	if actual.Status.UpdatedReplicas >= replicas {
+		return nil
+	}
+
+	// UpdatedReplicas is also short while a pod is missing: during a scale-up, or while a pod that was evicted
+	// or could not be created is still on its way. That is not a rollout and must not hold the reconcile, so
+	// what counts is whether any pod runs an older revision. CurrentRevision is not compared with
+	// UpdateRevision to tell: under OnDelete the StatefulSet controller never advances it, and a StatefulSet
+	// that was created again starts with both equal while its adopted pods can still run an older revision.
+	outdated, err := be.findNextPodToUpdate(ctx, src, stsName, actual.Status.UpdateRevision)
+	if err != nil {
+		return err
+	}
+	if outdated == nil {
 		return nil
 	}
 
@@ -169,6 +194,8 @@ func (be *BeController) checkTabletBalance(
 	}
 	defer db.Close()
 
+	ctx, cancel := mysqlutil.WithRequestTimeout(ctx)
+	defer cancel()
 	rows, err := db.QueryContext(ctx, "SHOW PROC '/cluster_balance'")
 	if err != nil {
 		return false, fmt.Errorf("query cluster_balance: %w", err)

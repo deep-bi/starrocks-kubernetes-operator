@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/mysqlutil"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
@@ -107,6 +108,9 @@ func (executor *SQLExecutor) dsn() string {
 // ExecuteContext sql statements. Every time a SQL statement needs to be executed, a new sql.DB instance will be created.
 // This is because SQL statements are executed infrequently.
 func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, statement string) error {
+	ctx, cancel := mysqlutil.WithRequestTimeout(ctx)
+	defer cancel()
+
 	var err error
 	if db == nil {
 		db, err = sql.Open("mysql", executor.dsn())
@@ -156,6 +160,9 @@ type ComputeNode struct {
 }
 
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
+	ctx, cancel := mysqlutil.WithRequestTimeout(ctx)
+	defer cancel()
+
 	rows, err := executor.QueryContext(ctx, db, ShowComputeNodesStatement)
 	if err != nil {
 		return nil, err
