@@ -36,8 +36,15 @@ const (
 
 // buildPodTemplate construct the podTemplate for deploy fe.
 func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
-	metaName := src.Name + "-" + srapi.DEFAULT_FE
-	feSpec := src.Spec.StarRocksFeSpec
+	return BuildPodTemplate(src.Name, src.Namespace, src.Name, src.Spec.StarRocksFeSpec, config)
+}
+
+// BuildPodTemplate constructs the pod template of FE pods.
+// prefixName names the pods and their labels: the name of the cluster for its own FE, the name of the node
+// group for a group of observers. clusterName is the cluster whose FE service the pods join through.
+func BuildPodTemplate(prefixName, namespace, clusterName string, feSpec *srapi.StarRocksFeSpec,
+	config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
+	metaName := prefixName + "-" + srapi.DEFAULT_FE
 
 	vols, volMounts := pod.MountStorageVolumes(feSpec)
 	// add default volume about log, meta if not configure.
@@ -56,8 +63,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		return nil, err
 	}
 
-	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
+	feExternalServiceName := service.ExternalServiceName(clusterName, feSpec)
+	envs := pod.Envs(feSpec, config, feExternalServiceName, namespace, feSpec.FeEnvVars)
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
@@ -92,9 +99,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaName,
-			Namespace:   src.Namespace,
+			Namespace:   namespace,
 			Annotations: annotations,
-			Labels:      pod.Labels(src.Name, src.Spec.StarRocksFeSpec),
+			Labels:      pod.Labels(prefixName, feSpec),
 		},
 		Spec: podSpec,
 	}, nil

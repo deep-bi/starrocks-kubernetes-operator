@@ -13,6 +13,7 @@ var (
 func Register() {
 	SchemeBuilder.Register(&StarRocksCluster{}, &StarRocksClusterList{})
 	SchemeBuilder.Register(&StarRocksWarehouse{}, &StarRocksWarehouseList{})
+	SchemeBuilder.Register(&StarRocksNodeGroup{}, &StarRocksNodeGroupList{})
 
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(AddToScheme(Scheme))

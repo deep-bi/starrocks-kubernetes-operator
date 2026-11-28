@@ -29,6 +29,7 @@ The table lists what this fork adds on top of upstream `v1.11.8`. "Since" is the
 | **VolumeAttributesClass**: set the IOPS and throughput class of FE, BE and CN volumes. | `storageVolumes[].volumeAttributesClassName` | deepbi.2 | [#762](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/762) |
 | **Cross-namespace warehouse**: a `StarRocksWarehouse` can live in a different namespace from its `StarRocksCluster`. | `spec.starRocksClusterNamespace` on the warehouse | deepbi.2 | [#759](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/759) |
 | **Priority class**: `priorityClassName` for FE, BE, CN, FE Proxy and warehouse pods, in the CRDs and the Helm charts. | `priorityClassName` on each component spec | deepbi.3 | [#647](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/647) |
+| **Node groups**: a `StarRocksNodeGroup` is a named set of CN or FE observer pods of a cluster that is placed, sized and scaled on its own, with its own `scale` subresource for HPA and KEDA. Its image tag always follows the cluster. See [node groups](./doc/node_groups_howto.md). | `StarRocksNodeGroup` CRD | unreleased | none |
 
 Fixes not in upstream:
 

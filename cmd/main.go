@@ -110,6 +110,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := controllers.SetupNodeGroupReconciler(mgr, _namespace, _denyList); err != nil {
+		logger.Error(err, "unable to set up node group reconciler")
+		os.Exit(1)
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

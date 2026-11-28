@@ -8,6 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/predicates"
@@ -16,6 +18,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/nodegroup"
 )
 
 func SetupClusterReconciler(mgr ctrl.Manager, denyList string) error {
@@ -96,6 +99,40 @@ func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		WithEventFilter(predicates.NewGenericPredicates(r.denyList)).
+		Complete(r)
+}
+
+// SetupNodeGroupReconciler sets up the StarRocksNodeGroup controller.
+// Like StarRocksWarehouse, the StarRocksNodeGroup CRD is optional: without it the controller is not started.
+func SetupNodeGroupReconciler(mgr ctrl.Manager, namespace string, denyList string) error {
+	var listOpts []client.ListOption
+	if namespace != "" {
+		listOpts = append(listOpts, client.InNamespace(namespace))
+	}
+	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksNodeGroupList{}, listOpts...); err != nil {
+		if meta.IsNoMatchError(err) {
+			// StarRocksNodeGroup CRD is not found, skip StarRocksNodeGroupReconciler
+			return nil
+		}
+		return err
+	}
+
+	reconciler := &StarRocksNodeGroupReconciler{
+		Client:     mgr.GetClient(),
+		controller: nodegroup.New(mgr.GetClient(), mgr.GetEventRecorderFor),
+		denyList:   denyList,
+	}
+	return reconciler.SetupWithManager(mgr)
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *StarRocksNodeGroupReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&srapi.StarRocksNodeGroup{}).
+		Owns(&appsv1.StatefulSet{}).
+		Owns(&corev1.Service{}).
+		Watches(&source.Kind{Type: &srapi.StarRocksCluster{}}, handler.EnqueueRequestsFromMapFunc(r.groupsOfCluster)).
 		WithEventFilter(predicates.NewGenericPredicates(r.denyList)).
 		Complete(r)
 }

@@ -78,6 +78,7 @@ rules:
   resources:
   - starrocksclusters
   - starrockswarehouses
+  - starrocksnodegroups
   verbs:
   - '*'
 # when deploying to OpenShift, the following permission is also necessary
@@ -86,6 +87,7 @@ rules:
   resources:
   - starrocksclusters/finalizers
   - starrockswarehouses/finalizers
+  - starrocksnodegroups/finalizers
   verbs:
   - update
 - apiGroups:
@@ -93,6 +95,7 @@ rules:
   resources:
   - starrocksclusters/status
   - starrockswarehouses/status
+  - starrocksnodegroups/status
   verbs:
   - get
   - patch

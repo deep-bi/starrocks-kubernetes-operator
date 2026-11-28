@@ -12,6 +12,7 @@ import (
 const (
 	StarRocksClusterKind   = "StarRocksCluster"
 	StarRocksWarehouseKind = "StarRocksWarehouse"
+	StarRocksNodeGroupKind = "StarRocksNodeGroup"
 
 	// SkipFECleanupAnnotation, set to "true" on a StarRocksWarehouse, hands the warehouse's life in
 	// the FE over to whoever deletes the CR: the operator then holds no protection finalizer on the
@@ -81,6 +82,23 @@ func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
 		Kind:                  StarRocksWarehouseKind,
 		SubResourcePrefixName: GetPrefixNameForWarehouse(warehouse.Name),
 		IsWarehouseObject:     true,
+	}
+}
+
+// NewFromNodeGroup wraps a node group. Its sub resources are named after the group, so a group "spot" of
+// role cn runs the StatefulSet "spot-cn". The group lives in the namespace of its cluster.
+func NewFromNodeGroup(group *srapi.StarRocksNodeGroup) StarRocksObject {
+	return StarRocksObject{
+		TypeMeta: &metav1.TypeMeta{
+			APIVersion: srapi.GroupVersion.String(),
+			Kind:       StarRocksNodeGroupKind,
+		},
+		ObjectMeta:            &group.ObjectMeta,
+		ClusterName:           group.Spec.StarRocksCluster,
+		ClusterNamespace:      group.Namespace,
+		Kind:                  StarRocksNodeGroupKind,
+		SubResourcePrefixName: group.Name,
+		IsWarehouseObject:     false,
 	}
 }
 

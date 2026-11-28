@@ -74,6 +74,8 @@ type Frontend struct {
 	Host string
 	// Role is LEADER, FOLLOWER or OBSERVER.
 	Role string
+	// EditLogPort is the port the FE was added to the cluster with.
+	EditLogPort string
 	// Alive reports whether this FE is reachable from the FE that answered the query.
 	Alive bool
 }
@@ -170,6 +172,8 @@ func ParseShowFrontends(rows *sql.Rows) ([]Frontend, error) {
 				fe.Host = string(values[i])
 			case "Role":
 				fe.Role = string(values[i])
+			case "EditLogPort":
+				fe.EditLogPort = string(values[i])
 			case "Alive":
 				fe.Alive = strings.EqualFold(string(values[i]), "true")
 			}

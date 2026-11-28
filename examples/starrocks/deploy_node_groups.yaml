@@ -1,0 +1,38 @@
+# Node groups of the cluster "starrockscluster-sample": a set of CN pods on spot capacity and two FE observers.
+# The cluster must exist in the same namespace, and the StarRocksNodeGroup CRD must be installed:
+#   kubectl apply --server-side -f deploy/starrocks.com_starrocksnodegroups.yaml
+# See doc/node_groups_howto.md.
+
+apiVersion: starrocks.com/v1
+kind: StarRocksNodeGroup
+metadata:
+  name: spot
+  namespace: starrocks
+spec:
+  starRocksCluster: starrockscluster-sample
+  role: cn
+  template:
+    # no image: the group runs the CN image of the cluster, and follows it on upgrade
+    replicas: 2
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+    nodeSelector:
+      karpenter.sh/capacity-type: spot
+---
+apiVersion: starrocks.com/v1
+kind: StarRocksNodeGroup
+metadata:
+  name: readers
+  namespace: starrocks
+spec:
+  starRocksCluster: starrockscluster-sample
+  role: fe-observer
+  template:
+    replicas: 2
+    requests:
+      cpu: 2
+      memory: 4Gi
