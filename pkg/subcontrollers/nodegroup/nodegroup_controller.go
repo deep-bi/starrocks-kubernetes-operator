@@ -348,6 +348,9 @@ func (c *Controller) syncObservers(ctx context.Context, cluster *srapi.StarRocks
 	if err != nil {
 		return err
 	}
+	// The FE service of the cluster selects on this label once the cluster asks for it, see
+	// FEServiceIncludesObserversAnnotation. The observers always carry it, so that asking does not restart them.
+	podTemplate.Labels[srapi.FEServiceLabelKey] = cluster.Name
 	expect := statefulset.MakeStatefulset(comp.object, feSpec, podTemplate)
 	if err = k8sutils.ApplyStatefulSet(ctx, c.Client, &expect, true, rutils.StatefulSetDeepEqual); err != nil {
 		return err

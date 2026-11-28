@@ -246,6 +246,82 @@ func TestCheckFEReady(t *testing.T) {
 	}
 }
 
+func TestCheckFEReadyDoesNotCountObservers(t *testing.T) {
+	endpoints := func(pods ...string) *corev1.Endpoints {
+		ep := &corev1.Endpoints{
+			TypeMeta:   metav1.TypeMeta{Kind: "Endpoints", APIVersion: corev1.SchemeGroupVersion.String()},
+			ObjectMeta: metav1.ObjectMeta{Name: "sr-fe-service", Namespace: "default"},
+			Subsets:    []corev1.EndpointSubset{{}},
+		}
+		for _, name := range pods {
+			ep.Subsets[0].Addresses = append(ep.Subsets[0].Addresses, corev1.EndpointAddress{
+				IP: "127.0.0.1", TargetRef: &corev1.ObjectReference{Kind: "Pod", Name: name},
+			})
+		}
+		return ep
+	}
+	ctx := context.Background()
+	// sr-fe-readers-fe-0 is a pod of the node group sr-fe-readers, not of the cluster
+	require.False(t, fe.CheckFEReady(ctx, fake.NewFakeClient(srapi.Scheme, endpoints("readers-fe-0", "sr-fe-readers-fe-0")), "default", "sr"))
+	require.True(t, fe.CheckFEReady(ctx, fake.NewFakeClient(srapi.Scheme, endpoints("readers-fe-0", "sr-fe-1")), "default", "sr"))
+}
+
+func TestFEServiceIncludesObservers(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "sr", Namespace: "default",
+			Annotations: map[string]string{srapi.FEServiceIncludesObserversAnnotation: "true"},
+		},
+		Spec: srapi.StarRocksClusterSpec{StarRocksFeSpec: &srapi.StarRocksFeSpec{
+			StarRocksComponentSpec: srapi.StarRocksComponentSpec{StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: rutils.GetInt32Pointer(2), Image: "starrocks/fe-ubuntu:4.1.8",
+			}},
+		}},
+	}
+	own := map[string]string{srapi.OwnerReference: "sr-fe", srapi.ComponentLabelKey: srapi.DEFAULT_FE}
+	shared := map[string]string{srapi.FEServiceLabelKey: "sr", srapi.ComponentLabelKey: srapi.DEFAULT_FE}
+	fePod := func(name string, labeled bool) *corev1.Pod {
+		p := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default", Labels: map[string]string{}}}
+		for k, v := range own {
+			p.Labels[k] = v
+		}
+		if labeled {
+			p.Labels[srapi.FEServiceLabelKey] = "sr"
+		}
+		return p
+	}
+	selector := func(k8sClient client.Client) map[string]string {
+		var svc corev1.Service
+		require.NoError(t, k8sClient.Get(context.Background(),
+			types.NamespacedName{Namespace: "default", Name: "sr-fe-service"}, &svc))
+		return svc.Spec.Selector
+	}
+
+	// one pod has not been replaced yet: the service keeps selecting the pods of the cluster only
+	k8sClient := fake.NewFakeClient(srapi.Scheme, src, fePod("sr-fe-0", false), fePod("sr-fe-1", true))
+	fc := fe.New(k8sClient, fake.GetEventRecorderFor(nil))
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
+	var sts appsv1.StatefulSet
+	require.NoError(t, k8sClient.Get(context.Background(), types.NamespacedName{Namespace: "default", Name: "sr-fe"}, &sts))
+	require.Equal(t, "sr", sts.Spec.Template.Labels[srapi.FEServiceLabelKey])
+	require.Equal(t, own, sts.Spec.Selector.MatchLabels)
+	require.Equal(t, own, selector(k8sClient))
+
+	// every pod carries the label: the service moves to it, the search service does not
+	pod0 := fePod("sr-fe-0", true)
+	require.NoError(t, k8sClient.Update(context.Background(), pod0))
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
+	require.Equal(t, shared, selector(k8sClient))
+	var search corev1.Service
+	require.NoError(t, k8sClient.Get(context.Background(), types.NamespacedName{Namespace: "default", Name: "sr-fe-search"}, &search))
+	require.Equal(t, own, search.Spec.Selector)
+
+	// opting out moves the service back at once
+	src.Annotations = nil
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
+	require.Equal(t, own, selector(k8sClient))
+}
+
 func TestCheckFEFullyRolledOut(t *testing.T) {
 	type args struct {
 		ctx              context.Context

@@ -26,7 +26,22 @@ const (
 
 	// ComponentResourceHash the component hash
 	ComponentResourceHash string = "app.starrocks.components/hash"
+
+	// FEServiceLabelKey is the label the FE service of a cluster selects on once the cluster has opted in with
+	// FEServiceIncludesObserversAnnotation. Its value is the name of the cluster. The FE pods of the cluster
+	// carry it only after the opt-in; the observers of its node groups always carry it.
+	FEServiceLabelKey string = "app.starrocks.io/fe-service"
 )
+
+// FEServiceIncludesObserversAnnotation is set to "true" on a StarRocksCluster to make its FE service select
+// the FE observers of its node groups as well. Setting or removing it changes the FE pod template, so the FE
+// rolls once.
+const FEServiceIncludesObserversAnnotation = "starrocks.com/fe-service-includes-observers"
+
+// FEServiceIncludesObservers reports whether the cluster has opted in.
+func FEServiceIncludesObservers(cluster *StarRocksCluster) bool {
+	return cluster != nil && cluster.Annotations[FEServiceIncludesObserversAnnotation] == "true"
+}
 
 // the labels value. default statefulset name
 const (

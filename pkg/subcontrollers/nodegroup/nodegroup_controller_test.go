@@ -360,8 +360,9 @@ func TestSyncObserverGroup(t *testing.T) {
 	require.Contains(t, container.Env, corev1.EnvVar{Name: srapi.EnvIsFEObserver, Value: "true"})
 	// the observers join through the FE service of the cluster, not through their own
 	require.Contains(t, container.Env, corev1.EnvVar{Name: "FE_SERVICE_NAME", Value: "sr-fe-service.default"})
-	// their pods are not selected by the FE service of the cluster
+	// their pods are not selected by the FE service of the cluster, unless the cluster asks for the shared label
 	require.Equal(t, "readers-fe", sts.Spec.Template.Labels[srapi.OwnerReference])
+	require.Equal(t, "sr", sts.Spec.Template.Labels[srapi.FEServiceLabelKey])
 
 	for _, name := range []string{"readers-fe-service", "readers-fe-search"} {
 		require.NoError(t, c.Client.Get(context.Background(),

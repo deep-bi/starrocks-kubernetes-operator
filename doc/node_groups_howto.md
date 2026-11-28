@@ -53,7 +53,25 @@ spec:
 `template` takes the fields of `starRocksCnSpec` or `starRocksFeSpec`, with `envVars` for environment variables.
 The group `spot` runs the StatefulSet `spot-cn` with the Services `spot-cn-service` and `spot-cn-search`; the group
 `readers` runs `readers-fe`, `readers-fe-service` and `readers-fe-search`. Observers are reached through their own
-Service, not through the FE Service of the cluster.
+Service. The FE Service of the cluster does not select them unless the cluster asks for it, see below.
+
+## One FE Service for the cluster and its observers
+
+By default `<cluster>-fe-service` reaches only the FE pods of the cluster. To make it reach the observers of every
+node group of the cluster as well, set this annotation on the StarRocksCluster:
+
+```yaml
+metadata:
+  annotations:
+    starrocks.com/fe-service-includes-observers: "true"
+```
+
+The operator then adds the label `app.starrocks.io/fe-service: <cluster>` to the FE pods of the cluster. This changes
+the FE pod template, so **the FE does one rolling restart**. When every FE pod carries the label, the Service moves
+to it and starts to select the observers too. Observers always carry the label and are not restarted. The Services
+of the groups stay as they are.
+
+Removing the annotation moves the Service back at once and rolls the FE once more to remove the label.
 
 ## What a group takes from its cluster
 

@@ -36,7 +36,11 @@ const (
 
 // buildPodTemplate construct the podTemplate for deploy fe.
 func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
-	return BuildPodTemplate(src.Name, src.Namespace, src.Name, src.Spec.StarRocksFeSpec, config)
+	template, err := BuildPodTemplate(src.Name, src.Namespace, src.Name, src.Spec.StarRocksFeSpec, config)
+	if err == nil && srapi.FEServiceIncludesObservers(src) {
+		template.Labels[srapi.FEServiceLabelKey] = src.Name
+	}
+	return template, err
 }
 
 // BuildPodTemplate constructs the pod template of FE pods.

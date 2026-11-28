@@ -18,6 +18,8 @@ package fe
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -162,12 +164,78 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.Client, &svc, rutils.ServiceDeepEqual); err != nil {
+	if err = fc.applyExternalService(ctx, src, expectSts.Name, &svc); err != nil {
 		logger.Error(err, "deploy external service failed", "externalService", svc)
 		return err
 	}
 
 	return nil
+}
+
+// enforceServiceSelector makes the selector of the deployed service exactly the expected one. ApplyService
+// merges: it adds the keys of a new selector but keeps a key the operator has no record of having set, which
+// is the case for a service created by an earlier version. A selector that keeps both the old and the new key
+// selects the FE pods of the cluster only.
+func (fc *FeController) enforceServiceSelector(ctx context.Context, expect *corev1.Service) error {
+	var actual corev1.Service
+	if err := fc.Client.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
+		return err
+	}
+	if reflect.DeepEqual(actual.Spec.Selector, expect.Spec.Selector) {
+		return nil
+	}
+	actual.Spec.Selector = expect.Spec.Selector
+	return fc.Client.Update(ctx, &actual)
+}
+
+// applyExternalService deploys the FE service of the cluster.
+func (fc *FeController) applyExternalService(ctx context.Context, src *srapi.StarRocksCluster, stsName string,
+	svc *corev1.Service) error {
+	if err := fc.selectObservers(ctx, src, stsName, svc); err != nil {
+		return err
+	}
+	if err := k8sutils.ApplyService(ctx, fc.Client, svc, rutils.ServiceDeepEqual); err != nil {
+		return err
+	}
+	return fc.enforceServiceSelector(ctx, svc)
+}
+
+// selectObservers moves the selector of the FE service to the label the cluster shares with the observers of
+// its node groups, when the cluster asks for it. The service moves only when every FE pod carries the label:
+// until then the pods that have not been replaced yet would drop out of the service.
+func (fc *FeController) selectObservers(ctx context.Context, src *srapi.StarRocksCluster, stsName string, svc *corev1.Service) error {
+	if !srapi.FEServiceIncludesObservers(src) {
+		return nil
+	}
+	labeled, err := fc.fePodsCarryServiceLabel(ctx, src, stsName)
+	if err != nil || !labeled {
+		return err
+	}
+	svc.Spec.Selector = map[string]string{
+		srapi.ComponentLabelKey: srapi.DEFAULT_FE,
+		srapi.FEServiceLabelKey: src.Name,
+	}
+	return nil
+}
+
+// fePodsCarryServiceLabel reports whether the cluster has FE pods and all of them carry FEServiceLabelKey.
+func (fc *FeController) fePodsCarryServiceLabel(ctx context.Context, src *srapi.StarRocksCluster, stsName string) (bool, error) {
+	var podList corev1.PodList
+	if err := fc.Client.List(ctx, &podList, client.InNamespace(src.Namespace),
+		client.MatchingLabels(load.Selector(src.Name, src.Spec.StarRocksFeSpec))); err != nil {
+		return false, err
+	}
+	found := false
+	for i := range podList.Items {
+		if _, ok := podOrdinal(stsName, podList.Items[i].Name); !ok {
+			continue
+		}
+		if podList.Items[i].Labels[srapi.FEServiceLabelKey] != src.Name {
+			return false, nil
+		}
+		found = true
+	}
+	return found, nil
 }
 
 // UpdateClusterStatus update the all resource status about fe.
@@ -276,9 +344,20 @@ func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace
 		return false
 	}
 
+	// The service may also select the FE observers of node groups, see FEServiceIncludesObserversAnnotation.
+	// An observer that is ready does not make the FE of the cluster ready.
+	stsName := load.Name(clusterName, (*srapi.StarRocksFeSpec)(nil))
 	for _, sub := range endpoints.Subsets {
-		if len(sub.Addresses) > 0 {
-			return true
+		for i := range sub.Addresses {
+			target := sub.Addresses[i].TargetRef
+			if target == nil || target.Kind != "Pod" {
+				return true
+			}
+			// the name must be exactly <statefulset>-<ordinal>: the pods of a node group named
+			// <cluster>-fe-x start with the same prefix
+			if ordinal, ok := podOrdinal(stsName, target.Name); ok && target.Name == fmt.Sprintf("%s-%d", stsName, ordinal) {
+				return true
+			}
 		}
 	}
 
